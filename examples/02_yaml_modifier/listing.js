@@ -5,13 +5,14 @@ const args = {
     //   ex. authFullName_t:"First Last"
     //   ex. authFullName_t:"First1 Last1" OR authFullName_t:"First2 Last2"
     //   ex. authFullName_t:"First Last" OR authIdHal_s:id-hal
-    query : 'authFullName_t:"Marc Christie"',
+    query : 'authIdHal_s:damien-rohmer OR authFullName_t:"Damien Rohmer" OR authFullName_t:"Vicky Kalogeiton" OR authFullName_t:"Marie-Paule Cani"',
 
     // The filter on the HAL result. Change the begin/end date to your application
-    filter : 'publicationDateY_i:[1980 TO *]',
+    filter : 'publicationDateY_i:[2019 TO *]',
 
     // The element ID in the html file where the publication should be inserted
-    //   ex. Your html should have something like <div id="listing_publication"></div>
+    //   ex. Your html should have something like 
+    //       <div id="listing_publication"></div>
     html_root_id : '#listing-publication',
 
     // The optional Yaml file allowing to tune the displayed publication list
@@ -20,13 +21,16 @@ const args = {
     //     yaml_modifier_path : '',        // no yaml modifier, don't try to fetch it.
     yaml_modifier_path : 'modifier.yaml',
 
+    // Local path where local files are looked for ({{local}} variable in yaml file)
+    local_path : '',
+
     // The path to a default thumbnail image in case none if found
     default_thumbnail_path: 'assets/thumbnail_default.jpg',
 
     // The element ID in the html file where the publication should be inserted
 
     // An optionnal path that can be indicated in yaml file as {{pathToData}} to point to a specific external link
-    path_to_external_data: 'https://www.lix.polytechnique.fr/vista/vista-web-data/',
+    external_data_path: 'https://www.lix.polytechnique.fr/vista/vista-web-data/',
 
     // How the script should deal with Yaml elements that are not in the Hal data
     //  additional_yaml == 'skip'    : Skip the additional yaml element silently
@@ -428,6 +432,11 @@ function display_data() {
 
     let html_txt = '';
     const all_years = Object.keys(global.data_sorted).sort().reverse();
+    html_txt += `Quick access: `;
+    for(const year of all_years) {
+        html_txt += `[<a href="#year-${year}">${year}</a>] `;
+    }
+
     for(const year of all_years) {
         html_txt += `<h2 class="publication-year" id="year-${year}">${year}</h2>`;
 
@@ -450,6 +459,10 @@ function display_data() {
             html_txt += `     <div class="title">${entry.title}</div>`;
             html_txt += `     <div class="authors">${authors}.</div>`;
             html_txt += `     <div class="journal">${journal_html}</div>`;
+
+            if(entry.award != undefined) {
+                html_txt += `<div class="award">${entry.award}</div>`;
+            }
     
             if(entry.doi != undefined) {
                 html_txt += `     <div class="doi"><a href="https://doi.org/${entry.doi}">${entry.doi}</a></div>`;
@@ -512,7 +525,9 @@ function convert_arguments_to_query(args) {
 }
 
 function load_data_from_yaml(data_txt) {
-    data_txt = data_txt.replaceAll('{{pathToData}}',args.path_to_external_data);
+    data_txt = data_txt.replaceAll('{{pathToData}}',args.external_data_path);
+    data_txt = data_txt.replaceAll('{{local}}',args.local_path);
+    
     const data_yaml = jsyaml.load(data_txt);
 
     for(const [id,entry] of Object.entries(data_yaml) ) {

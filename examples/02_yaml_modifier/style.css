@@ -91,6 +91,11 @@
     color: darkred;
 }
 
+.publication-entry .award {
+    color: darkred;
+    font-weight: bold;
+}
+
 .publication-year {
     color: #5599FF;
     font-size: 160%;
