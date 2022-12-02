@@ -1,0 +1,109 @@
+---
+#2022 Garnier SMO
+hal-03842830:
+  thumbnail: https://hal.archives-ouvertes.fr/hal-03842830/file/thumbnail.mp4
+
+
+#2022 Dufour ECCV
+hal-03840802:
+  project_page: https://imagine.enpc.fr/~dufourn/publications/scam.html
+  code: https://github.com/nicolas-dufour/SCAM
+  video: https://www.youtube.com/watch?v=YzROtpjuSaQ
+  thumbnail: assets/2022_dufour_eccv/thumbnail.jpg
+
+#2022 Liu ACCV
+hal-03839553:
+  conference-short: ACCV
+  conference: Asian Conference on Computer Vision
+  project_page: ../projects/2022_accv_liu/
+
+#2022 Kwiatkowski MIG
+hal-03780979:
+  conference-short: MIG
+  conference: Motion, Interaction and Games
+  thumbnail: assets/2022_kwiatkowski_mig/thumbnail.jpg
+
+#2022 Alvarado SCA
+hal-03757439:
+  code: https://github.com/edualvarado/unity-antagonistic-controller
+  conference_short: SCA
+  conference: Symposium on Computer Animation
+  journal: "Computer Graphics Forum"
+  thumbnail: '{{pathToData}}publications/2022_alvarado_sca/thumbnail_sca2022_alvarado.mp4'
+  article: '{{pathToData}}publications/2022_alvarado_sca/sca2022_alvarado.pdf'
+  video: '{{pathToData}}publications/2022_alvarado_sca/sca2022_alvarado.mp4'
+  year: 2022
+  timestamp: '2022-2022-09-10'
+  title: Generating Upper-Body Motion for Real-Time Characters Making their Way through Dynamic Environments
+  authors: ["Eduardo Alvarado", "Damien Rohmer", "Marie-Paule Cani"]
+  link-hal: '{{pathToData}}publications/2022_alvarado_sca/sca2022_alvarado.pdf'
+  award: "Best Paper Honorable Mention Award"
+
+# 2022 Lastic I3D
+hal-03639288:
+  code: https://gitlab.com/mlastic/volcanicplume
+  conference_short: I3D
+  conference: Interactive 3D Graphics and Games
+  journal_short: PACM CGIT
+  journal: "Computer Graphics and Interactive Techniques"
+  thumbnail: assets/2022_lastic_eg/thumbnail.gif
+
+# 2022 Alvarado Frontiers
+hal-03630136:
+  code: https://github.com/edualvarado/unity-footprints
+  video: https://youtu.be/aWBntnCOwEE
+  project_page: https://edualvarado.com/real-time-locomotion-on-soft-grounds/
+  thumbnail: assets/2022_alvarado_frontiers/thumbnail.gif
+
+# 2022 Kalyanasudaram GI
+hal-03670370:
+  code: https://github.com/nkmultimedia/acceleration-skinning
+  thumbnail: assets/2022_kalyanasundaram_gi/thumbnail.gif
+  video_presentation: https://www.youtube.com/watch?v=HqgLRTmTkZo#t=2h19min50s
+  award: "Best Paper: Michael Sweeney Award (paper authored by a student)"
+
+#2022 Rohmer EG
+hal-03195315:
+  video: https://velocityskinning.com/assets/videos/01_velocity_skinning_video.mp4
+  video_presentation: https://www.youtube.com/watch?v=eNgyPh-dVZs
+  code: https://github.com/drohmer/velocity_skinning_gpu
+  project_page: https://velocityskinning.com/
+  conference: Eurographics
+  journal: Computer Graphics Forum
+  award: "Best Paper: Honorable Mention of the Gunter Enderle Award"
+  doi: 10.1111/cgf.142654
+
+# 2021 Paliard EG-short
+hal-03200160:
+  conference: Eurographics Short Paper
+  thumbnail: assets/2021_paliard_egshort/thumbnail.jpg
+  code: https://github.com/edualvarado/unity-soft-walks
+  video: https://www.youtube.com/watch?v=76eIChGWUGw
+
+# 2019 Buffet SIGGRAPH
+hal-02129156:
+  conference: ACM SIGGRAPH
+  journal: ACM Transactions On Graphics
+  volume: 38
+  issue: 4
+  pages: "1-12"
+  doi: 10.1145/3306346.3323010
+  code: https://gitlab.com/TBuffet/implicit-untangling
+  thumbnail: assets/2019_buffet_siggraph/thumbnail.jpg
+
+# 2019 Olivier SMI
+hal-02158131:
+  conference_short: SMI
+  conference: Shape Modeling International
+  journal: Computer and Graphics
+  pages: "203-213"
+  thumbnail: assets/2019_olivier_smi/thumbnail.gif
+
+# 2019 Nivaggioli MIG
+hal-02307215:
+  conference_short: MIG
+  conference: Motion, Interaction and Games
+  article_number: 16
+  pages: "1-5"
+  award: Best Presentation Award
+  thumbnail: https://imagecomputing.net/damien.rohmer/research/publications/main/2019_mig_vocal_mimics/pictures/thumbnail.jpg
