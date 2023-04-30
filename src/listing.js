@@ -448,7 +448,7 @@ function display_data() {
             let journal_html = export_html_journal(entry);
             let authors = export_html_authors(entry);
     
-            html_txt += `<div class="publication-entry">`;
+            html_txt += `<div class="publication-entry" id="${id}">`;
     
             html_txt += `  <div class="thumbnail">`;
             html_txt += thumbnail_html;
