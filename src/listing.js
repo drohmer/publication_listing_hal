@@ -561,6 +561,29 @@ function remove_incorrect_data() {
     }
 }
 
+function get_parameters_scroll() {
+
+    // get parameter https://url?id-hal=...
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const id_hal_query = urlParams.get('id-hal');
+    if(id_hal_query!=null) {
+        const element_to_scroll = document.querySelector(`#${id_hal_query}`);
+        if(element_to_scroll!=null){
+            element_to_scroll.scrollIntoView(true);
+            window.scrollBy(0,-100); // replace the scroll a bit more up to center the publication
+            element_to_scroll.classList.add('highlighted');
+        }
+        else {
+             console.log('Cannot find element with id-hal: '+id_hal_query);
+        }
+    }
+    else{
+        console.log('Cannot query id-hal: '+id_hal_query);
+    }
+}
+
 async function main() {
 
     const query = convert_arguments_to_query(args);
@@ -578,6 +601,7 @@ async function main() {
     remove_incorrect_data();
     sort_data();
     display_data();
+    get_parameters_scroll();
 }
 
 
