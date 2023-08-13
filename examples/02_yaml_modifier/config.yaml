@@ -1,0 +1,58 @@
+---
+
+# The query on HAL to be adapted to your case
+#   e.g. authFullName_t:"First Last"
+#   e.g. authFullName_t:"First1 Last1" OR authFullName_t:"First2 Last2"
+#   e.g. authFullName_t:"First Last" OR authIdHal_s:id-hal
+query : 'authIdHal_s:damien-rohmer OR authFullName_t:"Damien Rohmer" OR authFullName_t:"Vicky Kalogeiton"'
+
+# The filter on the HAL result. Change the begin/end date to your application
+filter : 'publicationDateY_i:[2022 TO 2022]'
+
+# Display a menu with quick access to year, and selection for css style and publication type
+#  menu: true (Default)/false
+menu: true
+
+# Increment of years for the quick access menu
+# Default: 1 - every years are displayed
+#          N - Display an entry for every N-years
+menu_year_increment: 1
+
+# The path to a default thumbnail image in case none if found
+default_thumbnail_path: 'assets/thumbnail_default.jpg'
+
+# An optionnal path that can be indicated in yaml file as {{pathToData}} to point to a specific external link
+external_data_path: 'https://www.lix.polytechnique.fr/vista/publications/'
+
+
+# The element ID in the html file where the publication should be inserted
+#   ex. Your html should have something like 
+#       <div id="listing_publication"></div>
+html_root_id : '#listing-publication'
+
+# The element ID in the html file where a menu is displayed
+#   e.g. <div id="listing-publication-menu"></div>
+html_root_menu_id : '#listing-publication-menu'
+
+# The optional Yaml file allowing to tune the displayed publication list
+#  If you don't have any modifier, set it to the empty string
+#     yaml_modifier_path : 'someURL', // will try to fetch the given URL, display a warning on the console if it cannot be found.
+#     yaml_modifier_path : '',        // no yaml modifier, don't try to fetch it.
+yaml_modifier_path : 'modifier.yaml'
+
+# Local path where local files are looked for ({{local}} variable in yaml file)
+local_path : ''
+
+# How the script should deal with Yaml elements that are not in the Hal data
+#  additional_yaml == 'skip'    : Skip the additional yaml element silently
+#  additional_yaml == 'skip-warning' : Skip the additional yaml element, but display a warning on the console
+#  additional_yaml == 'add'     : Add the new yaml element in the display (for instance, allows to add publications that are not on Hal)
+additional_yaml: 'skip'
+
+# Indicate if the JS script tries to load a cache directory
+# true (Default) / false 
+try_cache: true
+
+# Cache directory
+#  Expect a file {cache_dir}cache.json if a cache exists
+cache_dir: 'cache/'

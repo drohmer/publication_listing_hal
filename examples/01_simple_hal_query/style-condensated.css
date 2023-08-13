@@ -4,8 +4,8 @@
 
 .thumbnail {
     flex-shrink: 0;
-    width: 250px;
-    height: 200px;
+    width: 75px;
+    height: 75px;
 }
 
 .thumbnail img, .thumbnail video{
@@ -21,7 +21,8 @@
 
 .publication-entry .description {
     padding-left: 1em;
-    padding-top: 1em;
+    /* padding-left: 1em;
+    padding-top: 1em; */
 }
 
 .publication-entry .title {
@@ -36,32 +37,31 @@
 }
 
 .publication-entry .authors, .publication-entry .title, .publication-entry .award, .publication-entry .journal {
-    margin-bottom: 0.5em;
+    /*margin-bottom: 0.5em;*/
 }
 .publication-entry .links {
     display: flex;
     align-items: center;
-    margin-top: 1em;
 }
 
 
 
 .publication-entry .links a{
     text-decoration: none;
-    color: black;
-    height: 2.0em;
-    line-height: 2.0em;
-    padding-left: 1em;
-    padding-right: 1em; 
-    border-radius: 10px;
+    color: gray;
     margin-right: 0.5em;
-    font-size: 85%;
+}
+.publication-entry .links a::before {
+    content: "[ "
+}
+.publication-entry .links a::after {
+    content: " ]"
 }
 .publication-entry .links a:hover {
-    outline: 2px solid black;
+    color: red;
 }
 
-.publication-entry .links .hal {
+/* .publication-entry .links .hal {
     background-color: rgb(213, 246, 255);
 }
 .publication-entry .links .article {
@@ -78,7 +78,7 @@
 }
 .publication-entry .links .project {
     background-color: lightyellow;
-}
+} */
 .publication-entry .doi a {
     text-decoration: none;
     color: rgb(76,119,153);
@@ -98,24 +98,18 @@
 
 .publication-year {
     color: #5599FF;
-    font-size: 160%;
+    font-size: 140%;
     font-weight: bold;
-    margin-top: 3em;
-    margin-bottom: 1em;
-    margin-left: 100px;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
 }
 
 .publication-type {
     color: #5599FF;
-    margin-left: 50px;
-    margin-top: 1.5em;
 }
 
 .publication-entry-separator{
-    width: 50%;
-    border-bottom: 2px solid lightgray;
-    margin-left: 100px;
-    margin-bottom: 1em;
+    display: none;
 }
 
 .spinning-loader {
@@ -144,9 +138,9 @@
         margin-bottom: 2em;
     }
     .thumbnail {
-        margin: auto;
+        display: none;
     }
-    .publication-year, .publication-type {
+    .publication-year {
         text-align: center;
         margin-left: 0;
         margin-right: 0;

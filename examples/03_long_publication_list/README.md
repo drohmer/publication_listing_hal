@@ -1,4 +1,4 @@
-This example shows a simple HAL query.
+This example shows a long publication list.
 
 # Simple usage
 

@@ -105,6 +105,12 @@
     margin-left: 100px;
 }
 
+.publication-type {
+    color: #5599FF;
+    margin-left: 50px;
+    margin-top: 1.5em;
+}
+
 .publication-entry-separator{
     width: 50%;
     border-bottom: 2px solid lightgray;
@@ -140,7 +146,7 @@
     .thumbnail {
         margin: auto;
     }
-    .publication-year {
+    .publication-year, .publication-type {
         text-align: center;
         margin-left: 0;
         margin-right: 0;
