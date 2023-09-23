@@ -378,11 +378,11 @@ function html_tag_video(source, extra="muted autoplay loop") {
 
     let html = '<video ';
     html += extra;
+    html += '>'
 
     // Source
     html += `<source src="${source}" ${mime}>`
 
-    html += '>'
 
     html += '</video>';
     return html;
