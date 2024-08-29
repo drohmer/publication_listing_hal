@@ -24,7 +24,7 @@ video_extension = ['.mp4', '.webm'];
 
 def contain_thumbnail(url):
     filename = url.split('/').pop()
-    filename_raw = os.path.splitext(url)[0]
+    filename_raw = os.path.splitext(filename)[0]
     if filename_raw.startswith('thumbnail') or filename_raw.endswith('thumbnail'):
         return True
     return False
