@@ -145,7 +145,10 @@ def main():
                 thumbnail_cache[hal_id] = filename
             except:
                 print('\t    Error: thumbnail not found')
-                thumbnail_cache[hal_id] = config['default_thumbnail_path']
+                filename_in = config['default_thumbnail_path']
+                filename_out = 'thumbnails/'+hal_id+'.jpg'
+                shutil.copy(filename_in, cache_dir+filename_out)
+                thumbnail_cache[hal_id] = filename_out
         else:
             filename_in = config['default_thumbnail_path']
             filename_out = 'thumbnails/'+hal_id+'.jpg'
