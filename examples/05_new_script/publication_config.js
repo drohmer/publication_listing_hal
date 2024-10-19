@@ -7,6 +7,7 @@ const publication_config = {
     custom : 'example_customization/publication_customize/publication_customize.js',
     cache_dir : 'cache/' ,
     path_to_data : './',
+    path_to_local: 'publication_customize/',
 
     default_thumbnail_path : 'thumbnail_default.jpg',
     html_tag_publication : '#listing-publication',

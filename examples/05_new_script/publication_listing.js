@@ -51,7 +51,7 @@ function safe_read(label_in, data_in, label_out, data_out) {
 
 
 function html_tag_image(source, alt="illustration", css_class="", css_id="") {
-    let html = '<img ';
+    let html = '<img loading="lazy" ';
     if(css_id!=='') {
         html += `id="${css_id}" `;
     }
@@ -73,7 +73,7 @@ function html_tag_video(source, extra="muted autoplay loop") {
         mime = 'type="video/webm"';
     }
 
-    let html = '<video ';
+    let html = '<video class="video_thumbnail" preload="metadata" ';
     html += extra;
     html += ' poster="'+publication_config.default_thumbnail_path+'"';
     html += '>'
@@ -94,7 +94,7 @@ function export_html_thumbnail(entry) {
     if(thumbnail_url !== undefined) {
 
         if(is_video(thumbnail_url)) {
-            return html_tag_video(thumbnail_url);
+            return html_tag_video(thumbnail_url,'');
         }
         else if(is_image(thumbnail_url)) {
             return html_tag_image(thumbnail_url, 'thumbnail');
@@ -262,6 +262,7 @@ function display_entry(entry) {
     let journal_html = export_html_journal(entry);
     let authors = export_html_authors(entry);
 
+
     let html_txt = '';
     html_txt += `<div class="publication-entry" id="${id}">`;
 
@@ -416,6 +417,17 @@ function update_data_and_display() {
     }
     display_data();
 
+    for(const vid of document.querySelectorAll('.video_thumbnail')) {
+        vid.addEventListener('canplay', video_loaded_action );
+    }
+
+}
+
+function video_loaded_action(event) {
+    event.currentTarget.muted = true;
+    event.currentTarget.loop = true;
+    event.currentTarget.autoplay = true;
+    event.currentTarget.play();
 }
 
 function generate_timestamp(data_hal) {
@@ -568,7 +580,7 @@ function update_value(data, priority_update) {
 
         safe_set_value('halId_s',entry, 'id', entry, priority_update);
         safe_set_value('publicationDateY_i',entry, 'year', entry, priority_update);
-        safe_set_value('title_s',entry, 'title', entry, priority_update);
+        safe_set_value_string(entry['title_s'][0], 'title', entry, priority_update);
         safe_set_value('authFullName_s',entry, 'authors', entry, priority_update);
         safe_set_value('docType_s',entry, 'type', entry, priority_update);
         safe_set_value_string(generate_timestamp(entry), 'timestamp', entry, priority_update);
@@ -581,8 +593,12 @@ function update_value(data, priority_update) {
         safe_set_value('volume_s',entry, 'volume', entry, priority_update)
         safe_set_value('files_s',entry, 'article', entry, priority_update)
         safe_set_value('doiId_s',entry, 'doi', entry, priority_update)
-        safe_set_value_string(find_thumbnail(entry), 'thumbnail', entry, priority_update)
-        safe_set_value_string(find_video(entry), 'video', entry, priority_update)
+        if(entry['thumbnail']===undefined) {
+            safe_set_value_string(find_thumbnail(entry), 'thumbnail', entry, priority_update)
+        }
+        if(entry['video']===undefined) {
+            safe_set_value_string(find_video(entry), 'video', entry, priority_update)
+        }
 
         if(data[id]['journal_auto'] === undefined) {
             generate_type_from_other_report(entry, entry);
@@ -613,12 +629,17 @@ function merge_data(current_data, new_data, priority_update, create_new_entry) {
             }
         }
         else {
-            for (const [key,value] of Object.entries(entry) ) {
+            for (let [key,value] of Object.entries(entry) ) {
                 if(current_data[id][key] == undefined || priority_update === true) {
+                    if(typeof value === 'string'){
+                        value = value.replace('{{local}}',publication_config.path_to_local);
+                        value = value.replace('{{pathToData}}',publication_config.path_to_data);
+                    }
                     current_data[id][key] = value;
                 }
             }
         }
+
     }
 
     update_value(current_data, priority_update);
@@ -647,11 +668,12 @@ function load_data_from_hal(data_hal_json) {
 
 function main() {
 
-
     initialize_global();
     merge_data(global_hal_listing['data'], cache, true, true);
     merge_data(global_hal_listing['data'], custom, true, false);
     update_data_and_display();
+
+    
 
     for(const query of publication_config.query) {
         query_hal(query);
