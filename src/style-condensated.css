@@ -21,8 +21,11 @@
 
 .publication-entry .description {
     padding-left: 1em;
-    /* padding-left: 1em;
-    padding-top: 1em; */
+    line-height: 1.2em;
+}
+
+.publication-entry .description div {
+    margin-bottom: 0.2em;
 }
 
 .publication-entry .title {
