@@ -22,11 +22,6 @@
 .publication-entry .description {
     padding-left: 1em;
     padding-top: 1em;
-    line-height: 1.25em;
-}
-
-.publication-entry .description div {
-    margin-bottom: 0.25em;
 }
 
 .publication-entry .title {
@@ -105,15 +100,26 @@
     color: #5599FF;
     font-size: 160%;
     font-weight: bold;
-    margin-top: 3em;
-    margin-bottom: 1em;
-    margin-left: 100px;
+    margin-top: 2.5em;
+    padding-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 100px;
+    background-color: rgb(240,240,240);
+    border: 2px solid gray;
 }
 
 .publication-type {
     color: #5599FF;
-    margin-left: 50px;
-    margin-top: 1.5em;
+    padding-left: 50px;
+    margin-top: 1.0em;
+
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    
+
+    background-color: rgb(245,245,245);
+    border: 1px solid rgb(180,180,180);
 }
 
 .publication-entry-separator{
@@ -136,6 +142,12 @@
     border: 2px solid red;
     border-radius: 10px;
     padding: 10px;
+}
+
+.hal-id {
+    font-size: 70%;
+    color: lightgray;
+    margin-top: 1em;
 }
   
 @keyframes spin {

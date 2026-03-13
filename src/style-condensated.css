@@ -21,11 +21,8 @@
 
 .publication-entry .description {
     padding-left: 1em;
-    line-height: 1.2em;
-}
-
-.publication-entry .description div {
-    margin-bottom: 0.2em;
+    /* padding-left: 1em;
+    padding-top: 1em; */
 }
 
 .publication-entry .title {
@@ -128,6 +125,11 @@
     border: 2px solid red;
     border-radius: 10px;
     padding: 10px;
+}
+
+.hal-id {
+    font-size: 70%;
+    color: lightgray;
 }
   
 @keyframes spin {

@@ -1,26 +1,20 @@
 import os
+import sys
 import urllib.request
-import json
 import ssl
+import json
 import shutil
-import yaml
+import js2py #pip install js2py
 from PIL import Image
-
-config_path = 'config.yaml'
-
-
-
-def generate_query_txt(query, query_filter):
-
-    query_txt = f'https://api.archives-ouvertes.fr/search/?q={query}&fl=publicationDateY_i,submittedDateY_i,submittedDateM_i,submittedDateD_i,title_s,authFullName_s,doiId_s,journalTitle_s,conferenceTitle_s,files_s,docType_s,fileAnnexes_s,halId_s,thumbId_i,issue_s,volume_s,linkExtUrl_s,bookTitle_s&rows=500&fq={query_filter}';
-
-    return query_txt
 
 
 # Extensions considered as image
-image_extension = ['.jpg', '.jpeg', '.jfif', '.webp', '.svg', '.png', '.gif'];
+image_extension = ['.jpg', '.jpeg', '.jfif', '.webp', '.svg', '.png', '.gif']
 # Extensions considered as video
-video_extension = ['.mp4', '.webm'];
+video_extension = ['.mp4', '.webm']
+
+
+
 
 def contain_thumbnail(url):
     filename = url.split('/').pop()
@@ -38,7 +32,7 @@ def get_thumbnail_url(data_hal) :
 
     is_video = lambda url : os.path.splitext(url)[1] in video_extension
     is_image = lambda url : os.path.splitext(url)[1] in image_extension
-    
+
 
     if 'fileAnnexes_s' in data_hal:
 
@@ -67,11 +61,11 @@ def get_thumbnail_url(data_hal) :
     #print('No thumbnail for entry ',data_hal)
     return {'valid':False, 'url':None, 'name':None, 'ext':None}
 
-def convert_image(filename_in):
+def convert_image(dir_in,filename_in):
 
     filename_raw, filename_ext = os.path.splitext(filename_in)
     if filename_ext in image_extension:
-        with Image.open(filename_in) as image:
+        with Image.open(dir_in+filename_in) as image:
             xres, yres = image.size
             if xres>300 or yres>300 or filename_ext!='.jpg':
 
@@ -83,46 +77,80 @@ def convert_image(filename_in):
                 image.resize((new_x, new_y))
                 image = image.convert('RGB')
 
-                image.save(filename_out)
+                image.save(dir_in+filename_out)
 
                 if filename_in != filename_out:
-                    os.remove(filename_in)
+                    os.remove(dir_in+filename_in)
 
-                return filename_out
-    return filename_in
+                return dir_in+filename_out
+    return dir_in+filename_in
 
 
-def create_dirs(config):
-    if len(config['cache_dir'])>0 and not config['cache_dir'].endswith('/'):
-        config['cache_dir'] = config['cache_dir']+'/'
+def create_dirs(dir):
 
-    if not os.path.isdir(config['cache_dir']):
-        os.mkdir(config['cache_dir'])
-    if not os.path.isdir(config['cache_dir']+'thumbnails'):
-        os.mkdir(config['cache_dir']+'thumbnails')
+    if len(dir)>0 and not dir.endswith('/'):
+        dir = dir+'/'
+
+    if not os.path.isdir(dir):
+        os.mkdir(dir)
+    if not os.path.isdir(dir+'thumbnails'):
+        os.mkdir(dir+'thumbnails')
+
 
 def main():
 
-    with open(config_path) as fid:
-        config = yaml.load(fid, Loader=yaml.loader.SafeLoader)
+    # Accept optional config path as CLI argument
+    if len(sys.argv) > 1:
+        config_path = sys.argv[1]
+    else:
+        config_path = 'publication_config.js'
 
-    create_dirs(config)
+    # Resolve cache_dir relative to config file location
+    config_dir = os.path.dirname(os.path.abspath(config_path))
+
+    with open(config_path) as fid:
+
+        js_content = fid.read()
+        js_content = js_content.replace('export','// ')
+        js_content = js_content + "\n function export_config(){return publication_config }; export_config()"
+
+        config = js2py.eval_js(js_content)
+
+    cache_dir = config['cache_dir']
+    # Make cache_dir relative to config file location
+    if not os.path.isabs(cache_dir):
+        cache_dir = os.path.join(config_dir, cache_dir)
+    if not cache_dir.endswith('/'):
+        cache_dir = cache_dir + '/'
+
+    create_dirs(cache_dir)
 
     ssl._create_default_https_context = ssl._create_unverified_context
 
-    query_txt = generate_query_txt(config['query'],config['filter']).replace(' ','%20')
-    req = urllib.request.Request(query_txt)
-    print("[ Query HAL ] ...")
-    with urllib.request.urlopen(req) as response:
-        html = response.read()
-        data = json.loads(html)['response']['docs']
-    print("[ Query HAL ] OK")
+    data = []
+    for q in config['query']:
+        query = q.replace(' ','%20')
+
+        req = urllib.request.Request(query)
+        print("[ Query HAL ] ...")
+        with urllib.request.urlopen(req) as response:
+            html = response.read()
+            data = data + json.loads(html)['response']['docs']
+        print("[ Query HAL ] OK")
+
+
 
     # Download cache thumbnails
     print("[ Download thumbnails ]", len(data),"publications")
     thumbnail_cache = {}
+
+    # Resolve default thumbnail path relative to config dir
+    default_thumbnail = config['default_thumbnail_path']
+    if not os.path.isabs(default_thumbnail):
+        default_thumbnail = os.path.join(config_dir, default_thumbnail)
+
     for k,entry in enumerate(data):
-        
+
         hal_id=entry['halId_s']
         print('\t ['+str(k)+'/'+str(len(data))+'] ',hal_id,'-',entry['title_s'][0])
 
@@ -130,20 +158,25 @@ def main():
 
         if thumbnail_url['valid']:
             print('\t    Found thumbnail: ',thumbnail_url['url'])
-            filename = config['cache_dir']+'thumbnails/'+hal_id+thumbnail_url['ext']
-            urllib.request.urlretrieve(thumbnail_url['url'], filename)
-            thumbnail_cache[hal_id] = filename
+            filename = 'thumbnails/'+hal_id+thumbnail_url['ext']
+            try:
+                urllib.request.urlretrieve(thumbnail_url['url'], cache_dir+filename)
+                thumbnail_cache[hal_id] = filename
+            except:
+                print('\t    Error: thumbnail not found')
+                filename_out = 'thumbnails/'+hal_id+'.jpg'
+                shutil.copy(default_thumbnail, cache_dir+filename_out)
+                thumbnail_cache[hal_id] = filename_out
         else:
-            filename_in = config['default_thumbnail_path']
-            filename_out = config['cache_dir']+'thumbnails/'+hal_id+'.jpg'
-            shutil.copy(filename_in, filename_out)
+            filename_out = 'thumbnails/'+hal_id+'.jpg'
+            shutil.copy(default_thumbnail, cache_dir+filename_out)
             thumbnail_cache[hal_id] = filename_out
-    
+
     # Convert cache thumbnails
     print("[ Convert thumbnails ]")
     for hal_id in thumbnail_cache:
         filename_in = thumbnail_cache[hal_id]
-        filename_out = convert_image(filename_in)
+        filename_out = convert_image(cache_dir,filename_in)
         thumbnail_cache[hal_id] = filename_out
 
     # Update JSON with cache
@@ -151,9 +184,16 @@ def main():
         hal_id=entry['halId_s']
         data[k]['cache_thumbnail'] = thumbnail_cache[hal_id]
 
-    with open(config['cache_dir']+'cache.json','w') as fid:
+    cache_js = 'const cache = '+json.dumps(data,indent=2)
+    with open(cache_dir+'cache.js','w') as fid:
+        fid.write( cache_js )
+    with open(cache_dir+'cache.json','w') as fid:
         fid.write( json.dumps(data,indent=2) )
 
-    print("[ Cache file ] writen in "+config['cache_dir']+'cache.json')    
+    print("[ Cache file ] writen in "+cache_dir+'cache.js')
 
-main()
+
+
+
+if __name__ == '__main__':
+    main()
