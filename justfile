@@ -10,11 +10,11 @@ update: update-customize update-cache
 
 # Convert publication_customize.yaml → .js
 update-customize:
-    python scripts/update_publication_customize.py {{example}}/publication_customize/publication_customize.yaml
+    python3 scripts/update_publication_customize.py {{example}}/publication_customize/publication_customize.yaml
 
 # Query HAL API, download thumbnails, generate cache.js
 update-cache:
-    python scripts/generate_cache.py {{example}}/publication_config.js
+    python3 scripts/generate_cache.py {{example}}/publication_config.js
 
 # Delete generated cache files (thumbnails, cache.js, cache.json)
 clean:
@@ -23,4 +23,4 @@ clean:
 
 # Serve the example via a local HTTP server
 serve port="8000":
-    python -m http.server {{port}}
+    python3 -m http.server {{port}}

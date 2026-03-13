@@ -15,11 +15,41 @@ import urllib.request
 import ssl
 import json
 import shutil
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from PIL import Image
 
 
 image_extension = ['.jpg', '.jpeg', '.jfif', '.webp', '.svg', '.png', '.gif']
 video_extension = ['.mp4', '.webm']
+
+# Max parallel downloads
+MAX_WORKERS = 8
+
+
+# ============================================================
+#  Pretty output (cargo-style)
+# ============================================================
+
+GREEN = '\033[1;32m'
+CYAN = '\033[1;36m'
+RED = '\033[1;31m'
+YELLOW = '\033[1;33m'
+DIM = '\033[2m'
+RESET = '\033[0m'
+
+def status(verb, message):
+    """Print a cargo-style status line: green verb + message."""
+    print(f'{GREEN}{verb:>12}{RESET} {message}')
+
+def warn(verb, message):
+    print(f'{YELLOW}{verb:>12}{RESET} {message}')
+
+def error(verb, message):
+    print(f'{RED}{verb:>12}{RESET} {message}')
+
+def dim(text):
+    return f'{DIM}{text}{RESET}'
 
 
 # ============================================================
@@ -166,10 +196,37 @@ def parse_js_config(config_path):
 
 
 # ============================================================
+#  Thumbnail download (single entry)
+# ============================================================
+
+def download_one_thumbnail(entry, cache_dir, default_thumbnail):
+    """Download/copy thumbnail for one entry. Returns (hal_id, relative_filename, log_lines)."""
+    hal_id = entry['halId_s']
+    title = entry['title_s'][0]
+    thumbnail_url = get_thumbnail_url(entry)
+
+    if thumbnail_url['valid']:
+        filename = 'thumbnails/' + hal_id + thumbnail_url['ext']
+        try:
+            urllib.request.urlretrieve(thumbnail_url['url'], cache_dir + filename)
+            return (hal_id, filename, 'ok', title)
+        except Exception:
+            filename_out = 'thumbnails/' + hal_id + '.jpg'
+            shutil.copy(default_thumbnail, cache_dir + filename_out)
+            return (hal_id, filename_out, 'fallback', title)
+    else:
+        filename_out = 'thumbnails/' + hal_id + '.jpg'
+        shutil.copy(default_thumbnail, cache_dir + filename_out)
+        return (hal_id, filename_out, 'default', title)
+
+
+# ============================================================
 #  Main
 # ============================================================
 
 def main():
+
+    t_start = time.time()
 
     # Accept optional config path as CLI argument
     if len(sys.argv) > 1:
@@ -177,6 +234,7 @@ def main():
     else:
         config_path = 'publication_config.js'
 
+    status('Reading', config_path)
     config_dir = os.path.dirname(os.path.abspath(config_path))
     config = parse_js_config(config_path)
 
@@ -202,48 +260,58 @@ def main():
     for q in config['query']:
         query = q.replace(' ', '%20')
         req = urllib.request.Request(query)
-        print("[ Query HAL ] ...")
+        status('Querying', 'HAL API ...')
         with urllib.request.urlopen(req) as response:
             html = response.read()
-            data = data + json.loads(html)['response']['docs']
-        print("[ Query HAL ] OK")
+            docs = json.loads(html)['response']['docs']
+            data = data + docs
+        status('Fetched', f'{len(docs)} publications')
 
-    # ------ Download thumbnails ------
-    print("[ Download thumbnails ]", len(data), "publications")
-    thumbnail_cache = {}
+    status('Found', f'{len(data)} publications total')
 
+    # ------ Download thumbnails (parallel) ------
     default_thumbnail = config['default_thumbnail_path']
     if not os.path.isabs(default_thumbnail):
         default_thumbnail = os.path.join(config_dir, default_thumbnail)
 
-    for k, entry in enumerate(data):
-        hal_id = entry['halId_s']
-        print('\t ['+str(k)+'/'+str(len(data))+'] ', hal_id, '-', entry['title_s'][0])
+    thumbnail_cache = {}
+    count_ok = 0
+    count_fallback = 0
+    count_default = 0
 
-        thumbnail_url = get_thumbnail_url(entry)
+    status('Downloading', f'thumbnails ({MAX_WORKERS} threads) ...')
 
-        if thumbnail_url['valid']:
-            print('\t    Found thumbnail: ', thumbnail_url['url'])
-            filename = 'thumbnails/'+hal_id+thumbnail_url['ext']
-            try:
-                urllib.request.urlretrieve(thumbnail_url['url'], cache_dir+filename)
-                thumbnail_cache[hal_id] = filename
-            except Exception:
-                print('\t    Error: thumbnail not found')
-                filename_out = 'thumbnails/'+hal_id+'.jpg'
-                shutil.copy(default_thumbnail, cache_dir+filename_out)
-                thumbnail_cache[hal_id] = filename_out
-        else:
-            filename_out = 'thumbnails/'+hal_id+'.jpg'
-            shutil.copy(default_thumbnail, cache_dir+filename_out)
-            thumbnail_cache[hal_id] = filename_out
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        futures = {
+            pool.submit(download_one_thumbnail, entry, cache_dir, default_thumbnail): entry
+            for entry in data
+        }
+        for i, future in enumerate(as_completed(futures), 1):
+            hal_id, filename, result_type, title = future.result()
+            thumbnail_cache[hal_id] = filename
+
+            short_title = title if len(title) <= 60 else title[:57] + '...'
+            progress = dim(f'[{i}/{len(data)}]')
+
+            if result_type == 'ok':
+                count_ok += 1
+                print(f'{"":>12} {progress} {hal_id} {dim(short_title)}')
+            elif result_type == 'fallback':
+                count_fallback += 1
+                warn('Warning', f'{progress} {hal_id} download failed, using default')
+            else:
+                count_default += 1
+                print(f'{"":>12} {progress} {hal_id} {dim("(default)")}')
+
+    status('Downloaded', f'{count_ok} ok, {count_default} default, {count_fallback} failed')
 
     # ------ Resize thumbnails ------
-    print("[ Convert thumbnails ]")
+    status('Converting', 'thumbnails to JPG (max 300px) ...')
     for hal_id in thumbnail_cache:
         filename_in = thumbnail_cache[hal_id]
         filename_out = convert_image(cache_dir, filename_in)
         thumbnail_cache[hal_id] = filename_out
+    status('Converted', f'{len(thumbnail_cache)} thumbnails')
 
     # ------ Write cache files ------
     # Paths in cache_thumbnail are relative to the HTML file (= config directory)
@@ -257,7 +325,8 @@ def main():
     with open(cache_dir+'cache.json', 'w') as fid:
         fid.write(json.dumps(data, indent=2))
 
-    print("[ Cache file ] writen in "+cache_dir+'cache.js')
+    elapsed = time.time() - t_start
+    status('Finished', f'cache written to {cache_dir} in {elapsed:.1f}s')
 
 
 if __name__ == '__main__':
