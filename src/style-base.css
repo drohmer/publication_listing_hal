@@ -1,0 +1,102 @@
+/*
+ * style-base.css — Shared layout and typography for all publication listing themes.
+ * Imported by style.css (standard) and style-condensated.css (compact).
+ * Theme files override sizes, colors, and decorations.
+ */
+
+/* --- Publication entry: horizontal flex layout (thumbnail + description) --- */
+
+.publication-entry {
+    display: flex;
+    margin-bottom: 1em;
+}
+
+.thumbnail {
+    flex-shrink: 0;
+}
+
+.thumbnail img, .thumbnail video {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    object-position: 50% 50%;
+}
+
+.publication-entry .description {
+    padding-left: 1em;
+}
+
+/* --- Text styles --- */
+
+.publication-entry .title {
+    display: inline-block;
+    font-weight: bold;
+    color: black;
+}
+
+.publication-entry .journal {
+    color: rgb(100,100,100);
+}
+
+.publication-entry .award {
+    color: darkred;
+    font-weight: bold;
+}
+
+/* --- Links row (Hal, Article, Video, Code, etc.) --- */
+
+.publication-entry .links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3em;
+}
+
+.publication-entry .links a {
+    text-decoration: none;
+}
+
+/* --- DOI --- */
+
+.publication-entry .doi a {
+    text-decoration: none;
+    color: rgb(76,119,153);
+    font-size: 80%;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+.publication-entry .doi a:hover {
+    color: darkred;
+}
+
+/* --- Year and type headings --- */
+
+.publication-year {
+    color: #5599FF;
+    font-weight: bold;
+}
+
+.publication-type {
+    color: #5599FF;
+}
+
+/* --- HAL identifier (small, discrete) --- */
+
+.hal-id {
+    font-size: 70%;
+    color: lightgray;
+}
+
+/* --- Mobile: stack thumbnail above description --- */
+
+@media (max-width: 800px) {
+    .publication-entry {
+        display: block;
+        margin-bottom: 2em;
+    }
+    .publication-year, .publication-type {
+        text-align: center;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
