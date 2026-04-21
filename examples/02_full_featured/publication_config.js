@@ -8,8 +8,8 @@ const publication_config = {
     path_to_data : './',
     path_to_local: 'publication_customize/',
 
-    default_thumbnail_path : '../../src/thumbnail_default.jpg',
-    css_path : '../../src/',
+    default_thumbnail_path : 'src/thumbnail_default.jpg',
+    css_path : 'src/',
     html_tag_publication : '#listing-publication',
     html_tag_publication_menu : '#listing-publication-menu',
     html_menu : true,

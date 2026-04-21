@@ -1,0 +1,85 @@
+/*
+ * style-standard.css — Standard theme.
+ * Large thumbnails, colored link buttons, bordered year headings.
+ */
+
+@import url('style-base.css');
+
+.thumbnail {
+    width: 250px;
+    height: 200px;
+}
+
+.publication-entry .description {
+    padding-top: 1em;
+}
+
+.publication-entry .authors,
+.publication-entry .title,
+.publication-entry .award,
+.publication-entry .journal {
+    margin-bottom: 0.5em;
+}
+
+.publication-entry .links {
+    margin-top: 1em;
+}
+
+/* Colored pill-shaped link buttons */
+.publication-entry .links a {
+    color: black;
+    height: 2.0em;
+    line-height: 2.0em;
+    padding-left: 1em;
+    padding-right: 1em;
+    border-radius: 10px;
+    font-size: 85%;
+}
+.publication-entry .links a:hover {
+    outline: 2px solid black;
+}
+
+.publication-entry .links .hal        { background-color: rgb(213, 246, 255); }
+.publication-entry .links .article    { background-color: lightgreen; }
+.publication-entry .links .video      { background-color: lightcoral; }
+.publication-entry .links .presentation { background-color: lightpink; }
+.publication-entry .links .code       { background-color: lightskyblue; }
+.publication-entry .links .project    { background-color: lightyellow; }
+
+/* Year heading with background band */
+.publication-year {
+    font-size: 160%;
+    margin-top: 2.5em;
+    padding-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 100px;
+    background-color: rgb(240,240,240);
+    border: 2px solid gray;
+}
+
+.publication-type {
+    padding-left: 50px;
+    margin-top: 1.0em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    background-color: rgb(245,245,245);
+    border: 1px solid rgb(180,180,180);
+}
+
+.publication-entry-separator {
+    width: 50%;
+    border-bottom: 2px solid lightgray;
+    margin-left: 100px;
+    margin-bottom: 1em;
+}
+
+.hal-id {
+    margin-top: 1em;
+}
+
+@media (max-width: 800px) {
+    .thumbnail {
+        margin: auto;
+    }
+}

@@ -1,0 +1,43 @@
+/*
+ * style-compact.css — Compact theme.
+ * Small thumbnails, bracket-style links, no separators.
+ */
+
+@import url('style-base.css');
+
+.thumbnail {
+    width: 75px;
+    height: 75px;
+}
+
+/* Bracket-style links: [ Hal ] [ Article ] ... */
+.publication-entry .links a {
+    color: gray;
+}
+.publication-entry .links a::before {
+    content: "[ "
+}
+.publication-entry .links a::after {
+    content: " ]"
+}
+.publication-entry .links a:hover {
+    color: red;
+}
+
+/* Lighter year heading (no background band) */
+.publication-year {
+    font-size: 140%;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+}
+
+.publication-entry-separator {
+    display: none;
+}
+
+/* Hide thumbnails on small screens to save space */
+@media (max-width: 800px) {
+    .thumbnail {
+        display: none;
+    }
+}
