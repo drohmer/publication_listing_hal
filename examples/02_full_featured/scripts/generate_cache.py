@@ -219,10 +219,7 @@ def download_one_pdf(entry, cache_dir):
     Returns (hal_id, relative_filename_or_None, status, title).
     status: 'ok' | 'no_pdf' | 'failed'
     """
-    try:
-        from pypdf import PdfReader, PdfWriter
-    except ImportError:
-        raise SystemExit("pypdf is required for --pdf. Install it with: pip install pypdf")
+    from pypdf import PdfReader, PdfWriter
 
     hal_id = entry['halId_s']
     title = entry['title_s'][0]
@@ -374,6 +371,10 @@ def main():
     # ------ Download PDFs (optional) ------
     pdf_cache = {}
     if args.pdf:
+        try:
+            import pypdf  # noqa: F401
+        except ImportError:
+            raise SystemExit("pypdf is required for --pdf. Install it with: pip install pypdf")
         status('Downloading', f'PDFs ({MAX_WORKERS} threads) ...')
         count_pdf_ok = 0
         count_pdf_none = 0

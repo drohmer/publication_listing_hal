@@ -495,6 +495,10 @@ function update_value(data, priority_update) {
             safe_set(entry, 'video', find_video(entry), priority_update);
         }
 
+        if(entry['cache_pdf'] !== undefined) {
+            entry['article'] = entry['cache_pdf'];
+        }
+
         if(entry['journal_auto'] === undefined) {
             generate_type_from_other_report(entry, entry);
         }
