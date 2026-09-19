@@ -24,3 +24,15 @@ clean:
 # Serve the example via a local HTTP server
 serve port="8000":
     python3 -m http.server {{port}}
+
+# Export an embeddable HTML fragment from the existing cache (offline)
+export-html:
+    node scripts/export_html.mjs {{example}}/publication_config.js --output {{example}}/cache/publications.html
+
+# Export a complete static page, with no JavaScript dependency
+export-page:
+    node scripts/export_html.mjs {{example}}/publication_config.js --format page --output {{example}}/publications.html
+
+# Verify the shared renderer and export CLI without contacting HAL
+test:
+    node --test tests/*.test.mjs
