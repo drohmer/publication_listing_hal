@@ -72,7 +72,7 @@ function html_tag_video(source, extra="muted autoplay loop") {
 
     let html = '<video class="video_thumbnail" preload="metadata" ';
     html += extra;
-    html += ' poster="'+publication_config.default_thumbnail_path+'"';
+    html += ' poster="'+html_url(publication_config.default_thumbnail_path)+'"';
     html += '>'
     html += `<source src="${source}" ${mime}>`
     html += '</video>';
@@ -102,7 +102,7 @@ function export_html_thumbnail(entry) {
         return html_tag_image(hal_thumbnail, 'thumbnail');
     }
 
-    return html_tag_image(publication_config.default_thumbnail_path, 'thumbnail');
+    return html_tag_image(html_url(publication_config.default_thumbnail_path), 'thumbnail');
 }
 
 /** Format a short/long name pair (e.g. conference or journal) as HTML. */
@@ -138,14 +138,14 @@ function export_html_journal(entry) {
 
     let html_journal_name = '';
     if(conf_part === '' && journal_part === '') {
-        html_journal_name = `<strong>${entry.journal_auto}</strong>`;
+        html_journal_name = `<strong>${entry.journal_auto || ''}</strong>`;
     }
     else {
         html_journal_name = [conf_part, journal_part].filter(s => s !== '').join('<br>');
     }
 
     let html = '';
-    if(entry.journal_auto != '') {
+    if(html_journal_name !== '' && html_journal_name !== '<strong></strong>') {
         html += `${html_journal_name}${html_issue_volume}, ${entry.year}`;
     }
     else {
@@ -203,6 +203,12 @@ function display_menu() {
     html_txt += 'Sorting: <input type="radio" name="sort-type" id="sorting-default" value="Default" checked ><label for="sorting-default">All</label> <input type="radio" id="sorting-type" name="sort-type" value="Type"><label for="sorting-type">Journal/Conference</label>'
 
     global_hal_listing.html_root_menu_element.innerHTML = html_txt;
+    // Live HAL refreshes rebuild the menu: retain the user's current controls.
+    document.querySelector('#sorting-default').checked = global_hal_listing.sorting_type === 'default';
+    document.querySelector('#sorting-type').checked = global_hal_listing.sorting_type === 'type';
+    const compact = /style-compact\.css(?:[?#]|$)/.test(document.querySelector('#css-hal')?.getAttribute('href') || '');
+    document.querySelector('#css-standard').checked = !compact;
+    document.querySelector('#css-min').checked = compact;
 
     document.querySelector('#css-standard').addEventListener('click',change_css);
     document.querySelector('#css-min').addEventListener('click',change_css);
@@ -210,8 +216,34 @@ function display_menu() {
     document.querySelector('#sorting-type').addEventListener('click',change_sorting);
 }
 
+/** Escape text, preserving common entities already supplied by HAL. */
+function escape_html(value) {
+    return String(value ?? '').replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-f]+);)|[<>"']/gi, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[char]);
+}
+
+function html_url(value) {
+    const url = String(value ?? '').trim();
+    // Allow ordinary relative paths and HTTP(S), never executable URL schemes.
+    const compact = url.replace(/[\u0000-\u0020]/g, '');
+    if (/^[a-z][a-z0-9+.-]*:/i.test(compact) && !/^https?:/i.test(compact)) return '';
+    // URLs are literal strings, so escape every ampersand (including entities).
+    // This also prevents entity-encoded executable schemes from being decoded.
+    return url.replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[char]);
+}
+
 /** Generate the HTML for a single publication entry. */
-function display_entry(entry) {
+function display_entry(raw_entry) {
+    // HAL metadata and custom text are plain text, not HTML markup.
+    const entry = Object.fromEntries(Object.entries(raw_entry).map(([key, value]) =>
+        [key, Array.isArray(value) ? value.map(escape_html) : escape_html(value)]));
+    for (const key of ['thumbnail', 'article', 'video', 'video_presentation', 'code', 'project_page']) {
+        if (raw_entry[key] != null) entry[key] = html_url(raw_entry[key]);
+    }
+
 
     let id = entry.id;
     let thumbnail_html = export_html_thumbnail(entry);
@@ -262,15 +294,12 @@ function display_entry(entry) {
 }
 
 /** Render all publications, grouped by year. Supports 'default' and 'type' sorting modes. */
-function display_data() {
-    const parent = global_hal_listing.html_root_element;
-    parent.innerHTML = "";
-
+function render_listing() {
     let html_txt = '';
     const all_years = Object.keys(global_hal_listing.data_sorted).sort().reverse();
 
     for(const year of all_years) {
-        html_txt += `<h2 class="publication-year" id="year-${year}">${year}</h2>`;
+        html_txt += `<h2 class="publication-year" id="year-${escape_html(year)}">${escape_html(year)}</h2>`;
 
         if(global_hal_listing.sorting_type==='default') {
             const N_entry = global_hal_listing.data_sorted[year].length;
@@ -304,7 +333,11 @@ function display_data() {
             }
         }
     }
-    parent.innerHTML = html_txt;
+    return html_txt;
+}
+
+function display_data() {
+    global_hal_listing.html_root_element.innerHTML = render_listing();
 }
 
 
@@ -495,7 +528,7 @@ function update_value(data, priority_update) {
             safe_set(entry, 'video', find_video(entry), priority_update);
         }
 
-        if(entry['cache_pdf'] !== undefined) {
+        if(entry['cache_pdf'] !== undefined && (priority_update || entry.article === undefined || entry.article === entry.files_s)) {
             entry['article'] = entry['cache_pdf'];
         }
 
@@ -543,7 +576,8 @@ function merge_data(current_data, new_data, priority_update, create_new_entry) {
         }
     }
 
-    update_value(current_data, priority_update);
+    // Custom normalized fields must not be overwritten by the original HAL fields.
+    update_value(current_data, create_new_entry && priority_update);
 }
 
 
@@ -583,11 +617,15 @@ function main() {
     initialize_global();
     merge_data(global_hal_listing['data'], typeof cache !== 'undefined' ? cache : [], true, true);
     merge_data(global_hal_listing['data'], typeof custom !== 'undefined' ? custom : {}, true, false);
-    update_data_and_display();
+    // Keep exported HTML visible if optional cache scripts fail to load.
+    if (Object.keys(global_hal_listing.data).length || !global_hal_listing.html_root_element.innerHTML.trim()) {
+        update_data_and_display();
+    }
 
     for(const query of publication_config.query) {
         query_hal(query);
     }
 }
 
-main();
+// Node.js exports reuse the renderer without a browser or network requests.
+if (typeof document !== 'undefined') main();

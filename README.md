@@ -6,6 +6,7 @@ Script to display HAL publications in an HTML page with:
 * Customization via YAML annotations (links to code, project page, refined conference/journal names, awards, etc.)
 * CSS themes (standard and compact)
 * Sorting by year or by publication type (journal/conference)
+* Optional offline HTML export (embeddable fragment or complete static page)
 
 ## Project Structure
 
@@ -119,3 +120,86 @@ hal-04665242:
 - Python 3
 - `Pillow` (`pip install Pillow`)
 - `PyYAML` (`pip install PyYAML`) — for `update_publication_customize.py`
+
+
+## Static HTML export
+
+The browser-only mode remains the default. To make the publication content
+available in the initial HTML (including without JavaScript), optionally export
+it at build time with **Node.js 18.3+**. No npm packages, browser, or network
+access are needed for this step. The exporter uses the same normalization,
+customization, ordering, thumbnail selection and HTML renderer as the browser.
+
+First generate `cache/cache.json` with `generate_cache.py`. If you use YAML
+customizations, regenerate `publication_customize.js` with
+`update_publication_customize.py` before exporting.
+
+```bash
+# Fragment: only year headings and entries, ready for a template include
+node scripts/export_html.mjs examples/02_full_featured/publication_config.js \
+  --output examples/02_full_featured/cache/publications.html
+
+# Complete HTML page: title, stylesheet and content; works without JavaScript
+node scripts/export_html.mjs examples/02_full_featured/publication_config.js \
+  --format page --title "Research publications" --lang en \
+  --output examples/02_full_featured/publications.html
+
+# Alternative grouping: year, then journal/conference/other
+node scripts/export_html.mjs examples/02_full_featured/publication_config.js \
+  --sort type --output examples/02_full_featured/cache/publications.html
+```
+
+Or use `just export-html` / `just export-page` with the existing `example`
+variable. Export is opt-in: cache generation does not change existing pages.
+Run `node scripts/export_html.mjs --help` for all options.
+
+`cache_dir` and `path_to_local` are read from the configuration, relative to its
+file. The default customization file is
+`<path_to_local>/publication_customize.js`; it is optional. Override inputs with
+`--cache FILE`, `--custom FILE`, or `--no-custom`. Explicit input/output file
+arguments are relative to your working directory. Missing caches, malformed
+JSON, and invalid options fail with a nonzero exit status before writing output.
+Config/customization JavaScript must be trusted project code. Publication text
+is HTML-escaped; inline HTML in title/author/award fields is not interpreted.
+
+### Embed in a static site and keep interactivity
+
+Include the fragment **at build time**, inside your existing listing container:
+
+```html
+<div id="listing-publication-menu"></div>
+<div id="listing-publication">
+  <!-- Insert the contents of cache/publications.html here during the build. -->
+</div>
+```
+
+For example with Jinja: `{% include "publications/cache/publications.html" %}`
+inside the container (adapt to your template loader root). Do not fetch the
+fragment with JavaScript or place it only in `<noscript>`: its purpose is to
+be part of the normal HTML response.
+
+Keep your existing stylesheet, configuration, cache, customization and
+`publication_listing.js` script tags if you want the menu, sorting and live HAL
+updates. The script replaces the listing in the same container, so entries
+are not duplicated. If the cache script is unavailable, exported content stays
+visible while the HAL query is pending or fails. With JavaScript disabled,
+the static list and article links remain usable; interactive controls are not
+included in the fragment.
+
+Fragment URLs retain their configured paths: the **containing page** must be
+served from the same directory as the configuration, just like existing
+examples. The fragment file itself may live in `cache/`. Complete-page exports
+rebase relative asset/link URLs for the output directory; they reference existing
+assets rather than copying or embedding them. Publish those assets alongside
+the page. Regenerate the export whenever the cache or customizations change.
+
+The default grouping retains the existing browser behavior of omitting
+preprints; `--sort type` retains its grouping behavior, including other types.
+
+### Tests
+
+```bash
+node --test tests/*.test.mjs
+```
+
+Tests use small local fixtures and do not query HAL or download media.
