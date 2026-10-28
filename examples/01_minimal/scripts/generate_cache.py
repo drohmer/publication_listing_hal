@@ -94,8 +94,8 @@ def get_thumbnail_url(data_hal):
             if is_image(url):
                 return fill_thumbnail_url_data(url)
 
-    if 'thumbId_i' in data_hal:
-        url = 'https://thumb.ccsd.cnrs.fr/'+str(data_hal['thumbId_i'])+'/thumb/medium'
+    if data_hal.get('thumbId_i'):  # 0 means no HAL thumbnail
+        url = 'https://thumb.ccsd.cnrs.fr/'+str(data_hal['thumbId_i'])+'/medium'
         return {'valid': True, 'url': url, 'name': "default_thumbnail", 'ext': '.jpg'}
 
     return {'valid': False, 'url': None, 'name': None, 'ext': None}

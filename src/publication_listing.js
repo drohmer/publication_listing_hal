@@ -97,8 +97,8 @@ function export_html_thumbnail(entry) {
     }
 
     // Fallback: HAL thumbnail via thumb API
-    if(entry.url_thumbnail_hal!=undefined) {
-        const hal_thumbnail = 'https://thumb.ccsd.cnrs.fr/'+entry.url_thumbnail_hal+'/thumb/medium';
+    if(entry.url_thumbnail_hal) { // 0 means no HAL thumbnail
+        const hal_thumbnail = 'https://thumb.ccsd.cnrs.fr/'+entry.url_thumbnail_hal+'/medium';
         return html_tag_image(hal_thumbnail, 'thumbnail');
     }
 
